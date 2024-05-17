@@ -1,47 +1,40 @@
 version: '3'
 services:
-  mysql:
+  mysql: #服务名称（不是容器名,名称最好不要含有特殊字符，碰到过用下划线时运行出错）
     image: mysql:5.7
+    container_name: tm-mysql #容器名称
     restart: always
-    hostname: mysql
-    container_name: xxl_job_db
-    ports:
-      - 28889:3306
-    volumes:
-      #mysql数据库挂载到host物理机目录/e/docker/mysql/data/db
-      - "./data:/var/lib/mysql"  
-      #容器的配置目录挂载到host物理机目录/e/docker/mysql/data/conf  
-      - "./conf:/etc/mysql/conf.d"
-      - "./root:/root"
-      - "./init:/docker-entrypoint-initdb.d"
     environment:
-      MYSQL_DATABASE: xxl-job
-      MYSQL_ROOT_PASSWORD: 123456 #root管理员用户密码
+      - "MYSQL_ROOT_PASSWORD=Tmkj@zgb123"
+      - "MYSQL_DATABASE=xxl_job"
     command: [
       '--character-set-server=utf8mb4',
       '--collation-server=utf8mb4_unicode_ci'
     ]
-    networks:
-      - xxl_job_net
-
-  admin:
-    image: xuxueli/xxl-job-admin:2.0.2
-    restart: always
-    hostname: admin
-    container_name: xxl_job
-    ports:
-      - 28888:8080
-    links:
-      - mysql
     volumes:
-      - "./tmp:/data/applogs"
+      #mysql数据库挂载到host物理机目录/e/docker/mysql/data/db
+      - "./docker/mysql/data:/var/lib/mysql"  
+      #容器的配置目录挂载到host物理机目录/e/docker/mysql/data/conf  
+      - "./docker/mysql/conf:/etc/mysql/conf.d"
+      - "./docker/root:/root"
+      - "./init:/docker-entrypoint-initdb.d"
+    ports:
+      - "3306:3306"
+    networks: #加入指定网络
+      - xxl_job_net
+  xxljob:
+    image: hydrionz/xxl-job-admin
+    container_name: tm-xxljob
+    ports:
+      - "9011:8080"
+    volumes:
+      - "./docker/xxl-job/applogs:/data/applogs"
     environment:
-      - spring.datasource.url=jdbc:mysql://mysql:3306/xxl-job?Unicode=true&characterEncoding=UTF-8&autoReconnect=true
-      - spring.datasource.password=123456
-    depends_on: 
-      - mysql
+      PARAMS: '--spring.datasource.url=jdbc:mysql://mysql:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai --spring.datasource.username=root --spring.datasource.password=Tmkj@zgb123'
     networks:
       - xxl_job_net
+    depends_on:
+      - mysql
 networks:
-   xxl_job_net:
+  xxl_job_net:
     driver: bridge
