@@ -2,7 +2,7 @@ version: '3'
 services:
   mysql: #服务名称（不是容器名,名称最好不要含有特殊字符，碰到过用下划线时运行出错）
     image: mysql:5.7
-    container_name: tm-mysql #容器名称
+    container_name: tiamaes-mysql #容器名称
     restart: always
     environment:
       - "MYSQL_ROOT_PASSWORD=Tmkj@zgb123"
@@ -13,22 +13,23 @@ services:
     ]
     volumes:
       #mysql数据库挂载到host物理机目录/e/docker/mysql/data/db
-      - "./docker/mysql/data:/var/lib/mysql"  
+      - "./dockerData/mysql/data:/var/lib/mysql"  
       #容器的配置目录挂载到host物理机目录/e/docker/mysql/data/conf  
-      - "./docker/mysql/conf:/etc/mysql/conf.d"
-      - "./docker/root:/root"
+      - "./dockerData/mysql/conf:/etc/mysql/conf.d"
+      - "./dockerData/root:/root"
       - "./init:/docker-entrypoint-initdb.d"
     ports:
       - "3306:3306"
     networks: #加入指定网络
       - xxl_job_net
   xxljob:
-    image: hydrionz/xxl-job-admin
-    container_name: tm-xxljob
+    image: tiamaes/xxl-job-admin:2.4.1
+    container_name: tiamaes-xxl-job-admin
+    restart: always
     ports:
       - "9011:8080"
     volumes:
-      - "./docker/xxl-job/applogs:/data/applogs"
+      - "./dockerData/xxl-job/applogs:/data/applogs"
     environment:
       PARAMS: '--spring.datasource.url=jdbc:mysql://mysql:3306/xxl_job?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai --spring.datasource.username=root --spring.datasource.password=Tmkj@zgb123'
     networks:
